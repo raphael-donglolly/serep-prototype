@@ -1,5 +1,7 @@
-package com.radoll.serep;
+package com.radoll.serep.control;
 
+import com.radoll.serep.AlertHelper;
+import com.radoll.serep.factory.TemplateConverter;
 import com.radoll.serep.models.DockModel;
 import com.radoll.serep.models.LayoutPosition;
 import com.radoll.serep.models.RemovableNodes;
@@ -11,19 +13,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Controller {
-
 
     @FXML
     private AnchorPane anchorPane;
@@ -34,7 +30,7 @@ public class Controller {
     private Window window;
 
     private static final String TRACK = "track";
-    private static final String DOCK = "dock";
+    public static final String DOCK = "dock";
     private static final String CODE = "code";
 
     private static final double OFFSET_FIELDS = 80.0;
@@ -249,47 +245,17 @@ public class Controller {
 
     public void handleLoadFileButtonAction(ActionEvent actionEvent) throws IOException {
 
-        String s = loadFileToString();
-        final List<DockModel> allDocks = getAllDocks();
+        final FileHandler fileHandler = new FileHandler(window);
 
-        for (DockModel dock : allDocks) {
+        String s = fileHandler.loadFileToString();
 
-            final String dockId = dock.getId();
-            final String dockValue = dock.getValue();
-
-            String xId = dockId.replace(DOCK + "_0", "x");
-            s = s.replaceAll(xId, dockValue);
-        }
-
-        saveFile(s);
-    }
-
-    private String loadFileToString() throws IOException {
-        FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-        fileChooser.getExtensionFilters().add(extFilter);
-        File file = fileChooser.showOpenDialog(window);
-        final String path = file.getPath();
-
-        return new String(Files.readAllBytes(Paths.get(path)));
-    }
+        final TemplateConverter templateConverter = new TemplateConverter();
 
 
-    private void saveFile(String s) throws IOException {
-        FileChooser fileChooser = new FileChooser();
 
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-        fileChooser.getExtensionFilters().add(extFilter);
 
-        File file = fileChooser.showSaveDialog(window);
+        final String result = templateConverter.convert(getAllDocks(), s);
 
-        SaveFile(s, file);
-
-    }
-
-    private void SaveFile(String content, File file) throws IOException {
-        FileWriter fileWriter = new FileWriter(file);
-        fileWriter.write(content);
-        fileWriter.close();
+        fileHandler.saveFile(result);
     }
 }
