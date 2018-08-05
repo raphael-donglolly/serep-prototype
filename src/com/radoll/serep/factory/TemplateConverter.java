@@ -3,6 +3,7 @@ package com.radoll.serep.factory;
 import com.radoll.serep.models.DockModel;
 
 import java.util.List;
+import java.util.Set;
 
 public class TemplateConverter {
 
@@ -17,20 +18,34 @@ public class TemplateConverter {
         System.out.println("Docks: " + docks.size());
 
 
-        for (int x = 1; docks.size()-1 >= x; x++) {
+        for (int x = 1; docks.size() - 1 >= x; x++) {
 
-
-            String copy = template;
-
-            System.out.println("dock 1: " + x1);
-            System.out.println("dock 2: " + x2);
-            System.out.println("  ");
 
             final DockModel dock1 = docks.get(x1);
             final DockModel dock2 = docks.get(x2);
 
-            final String firstRound = copy.replaceAll("x1", dock1.getValue());
-            final String finalRound = firstRound.replaceAll("x2", dock2.getValue());
+            final String firstRound = template.replaceAll("x1", dock1.getValue());
+            String finalRound = firstRound.replaceAll("x2", dock2.getValue());
+
+            final Outlier outlier = new Outlier();
+            final Set<String> outliers = outlier.find(template);
+
+            if (!outliers.isEmpty()) {
+                for (String currentOutlier : outliers) {
+                    for (DockModel dockModel : docks) {
+
+                        String id = dockModel.getId();
+
+                        id = id.replace("dock_0", "x");
+
+
+                        if (id.equals(currentOutlier)) {
+                            finalRound = finalRound.replaceAll(currentOutlier, dockModel.getValue());
+
+                        }
+                    }
+                }
+            }
 
             result = result.concat(finalRound).concat("\n");
 
